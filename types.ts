@@ -18,6 +18,7 @@ export interface Transaction {
   type: TransactionType;
   // FIX: Add optional category property for expense transactions. This resolves the error in SpendingChart.tsx.
   category?: ExpenseCategory;
+  recurringExpenseId?: string;
 }
 
 export interface Goal {
@@ -25,6 +26,13 @@ export interface Goal {
   name: string;
   targetAmount: number;
   savedAmount: number;
+}
+
+export interface RecurringExpense {
+  id: string;
+  name: string;
+  amount: number;
+  paidMonths: string[]; // Stores "YYYY-MM" for months it has been paid
 }
 
 export interface Accent {

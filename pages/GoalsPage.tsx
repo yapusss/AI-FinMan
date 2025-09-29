@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Page from '../components/layout/Page';
 import Card from '../components/common/Card';
@@ -6,6 +5,16 @@ import { useData } from '../contexts/DataContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { Goal } from '../types';
 import { getGoalPrioritization } from '../services/geminiService';
+
+const formatCurrencyInput = (value: string) => {
+    if (!value) return '';
+    const numberValue = parseInt(value.replace(/\D/g, ''), 10);
+    return isNaN(numberValue) ? '' : numberValue.toLocaleString('id-ID');
+};
+
+const unformatCurrencyInput = (value: string) => {
+    return value.replace(/\./g, '');
+};
 
 const GoalCalculator: React.FC = () => {
   const { addGoal } = useData();
@@ -17,8 +26,8 @@ const GoalCalculator: React.FC = () => {
 
   const handleCalculate = (e: React.FormEvent) => {
     e.preventDefault();
-    const target = parseFloat(targetAmount);
-    const savings = parseFloat(monthlySavings);
+    const target = parseFloat(unformatCurrencyInput(targetAmount));
+    const savings = parseFloat(unformatCurrencyInput(monthlySavings));
     if (target > 0 && savings > 0) {
       const months = Math.ceil(target / savings);
       const years = Math.floor(months / 12);
@@ -32,8 +41,9 @@ const GoalCalculator: React.FC = () => {
   };
   
   const handleSaveGoal = () => {
-      if (!goalName || !targetAmount) return;
-      addGoal({ name: goalName, targetAmount: parseFloat(targetAmount) });
+      const numericTarget = parseFloat(unformatCurrencyInput(targetAmount));
+      if (!goalName || !targetAmount || isNaN(numericTarget)) return;
+      addGoal({ name: goalName, targetAmount: numericTarget });
       setGoalName('');
       setTargetAmount('');
       setMonthlySavings('');
@@ -45,8 +55,8 @@ const GoalCalculator: React.FC = () => {
       <h2 className="text-lg font-semibold mb-4">Tambah Tujuan / Barang Impian</h2>
       <form onSubmit={handleCalculate} className="space-y-4">
         <input type="text" value={goalName} onChange={e => setGoalName(e.target.value)} placeholder="Nama Tujuan (mis: Laptop Baru)" className="w-full p-2 rounded bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600" required/>
-        <input type="number" value={targetAmount} onChange={e => setTargetAmount(e.target.value)} placeholder="Jumlah Target (Rp)" className="w-full p-2 rounded bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600" required/>
-        <input type="number" value={monthlySavings} onChange={e => setMonthlySavings(e.target.value)} placeholder="Tabungan per Bulan (Rp)" className="w-full p-2 rounded bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600" required/>
+        <input type="text" inputMode="numeric" value={targetAmount} onChange={e => setTargetAmount(formatCurrencyInput(e.target.value))} placeholder="Jumlah Target (Rp)" className="w-full p-2 rounded bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600" required/>
+        <input type="text" inputMode="numeric" value={monthlySavings} onChange={e => setMonthlySavings(formatCurrencyInput(e.target.value))} placeholder="Tabungan per Bulan (Rp)" className="w-full p-2 rounded bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600" required/>
         <button type="submit" className={`w-full text-white font-bold py-2 px-4 rounded bg-gradient-to-r ${accent.gradient} hover:opacity-90 transition-opacity`}>
           Hitung
         </button>
@@ -63,10 +73,10 @@ const GoalCalculator: React.FC = () => {
 
 const EditGoalModal: React.FC<{ goal: Goal; onClose: () => void; onSave: (goalId: string, newAmount: number) => void; }> = ({ goal, onClose, onSave }) => {
     const { accent } = useTheme();
-    const [newSavedAmount, setNewSavedAmount] = useState(goal.savedAmount.toString());
+    const [newSavedAmount, setNewSavedAmount] = useState(formatCurrencyInput(goal.savedAmount.toString()));
 
     const handleSave = () => {
-        const amount = parseFloat(newSavedAmount);
+        const amount = parseFloat(unformatCurrencyInput(newSavedAmount));
         if (!isNaN(amount) && amount >= 0 && amount <= goal.targetAmount) {
             onSave(goal.id, amount);
         } else {
@@ -86,9 +96,10 @@ const EditGoalModal: React.FC<{ goal: Goal; onClose: () => void; onSave: (goalId
                         <span className="font-semibold text-gray-500 dark:text-gray-300">Rp</span>
                         <input
                             id="savedAmount"
-                            type="number"
+                            type="text"
+                            inputMode="numeric"
                             value={newSavedAmount}
-                            onChange={(e) => setNewSavedAmount(e.target.value)}
+                            onChange={(e) => setNewSavedAmount(formatCurrencyInput(e.target.value))}
                             className="flex-grow w-full p-2 rounded bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600"
                             placeholder="Jumlah tersimpan"
                         />

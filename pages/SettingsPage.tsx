@@ -3,19 +3,27 @@ import Page from '../components/layout/Page';
 import Card from '../components/common/Card';
 import { useTheme } from '../contexts/ThemeContext';
 import { ACCENT_COLORS } from '../constants';
-import { useAuth } from '../contexts/AuthContext';
 import { Accent } from '../types';
 import { useData } from '../contexts/DataContext';
 
+const formatCurrencyInput = (value: string) => {
+    if (!value) return '';
+    const numberValue = parseInt(value.replace(/\D/g, ''), 10);
+    return isNaN(numberValue) ? '' : numberValue.toLocaleString('id-ID');
+};
+
+const unformatCurrencyInput = (value: string) => {
+    return value.replace(/\./g, '');
+};
+
 const SettingsPage: React.FC = () => {
   const { theme, toggleTheme, accent, setAccent } = useTheme();
-  const { logout } = useAuth();
   const { monthlyIncome, setMonthlyIncome } = useData();
-  const [localIncome, setLocalIncome] = useState(monthlyIncome.toString());
+  const [localIncome, setLocalIncome] = useState(formatCurrencyInput(monthlyIncome.toString()));
 
   const handleIncomeSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const newIncome = parseFloat(localIncome);
+    const newIncome = parseFloat(unformatCurrencyInput(localIncome));
     if (!isNaN(newIncome) && newIncome >= 0) {
       setMonthlyIncome(newIncome);
       alert('Pemasukan bulanan berhasil diperbarui!');
@@ -69,11 +77,12 @@ const SettingsPage: React.FC = () => {
             <div className="flex gap-2 items-center">
               <span className="font-semibold text-gray-500 dark:text-gray-300">Rp</span>
               <input
-                type="number"
+                type="text"
+                inputMode="numeric"
                 value={localIncome}
-                onChange={(e) => setLocalIncome(e.target.value)}
+                onChange={(e) => setLocalIncome(formatCurrencyInput(e.target.value))}
                 className="flex-grow w-full p-2 rounded bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600"
-                placeholder="Contoh: 5000000"
+                placeholder="Contoh: 5.000.000"
                 aria-label="Pemasukan Bulanan"
               />
             </div>
@@ -84,15 +93,6 @@ const SettingsPage: React.FC = () => {
               Simpan Pemasukan
             </button>
           </form>
-        </Card>
-
-        <Card>
-           <button
-            onClick={logout}
-            className="w-full text-center py-3 font-semibold text-red-500 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-colors"
-           >
-            Keluar
-           </button>
         </Card>
       </div>
     </Page>
