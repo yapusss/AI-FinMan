@@ -61,18 +61,66 @@ const GoalCalculator: React.FC = () => {
   );
 };
 
-const GoalItem: React.FC<{goal: Goal}> = ({ goal }) => {
+const EditGoalModal: React.FC<{ goal: Goal; onClose: () => void; onSave: (goalId: string, newAmount: number) => void; }> = ({ goal, onClose, onSave }) => {
+    const { accent } = useTheme();
+    const [newSavedAmount, setNewSavedAmount] = useState(goal.savedAmount.toString());
+
+    const handleSave = () => {
+        const amount = parseFloat(newSavedAmount);
+        if (!isNaN(amount) && amount >= 0 && amount <= goal.targetAmount) {
+            onSave(goal.id, amount);
+        } else {
+            alert("Masukkan jumlah yang valid dan tidak melebihi target.");
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" onClick={onClose}>
+            <div className="bg-light-card dark:bg-dark-card rounded-xl shadow-lg p-6 w-full max-w-sm" onClick={e => e.stopPropagation()}>
+                <h3 className="text-xl font-bold mb-2">{goal.name}</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Target: Rp{goal.targetAmount.toLocaleString('id-ID')}</p>
+                
+                <div className="space-y-2">
+                    <label htmlFor="savedAmount" className="block text-sm font-medium">Ubah Jumlah Tersimpan</label>
+                    <div className="flex gap-2 items-center">
+                        <span className="font-semibold text-gray-500 dark:text-gray-300">Rp</span>
+                        <input
+                            id="savedAmount"
+                            type="number"
+                            value={newSavedAmount}
+                            onChange={(e) => setNewSavedAmount(e.target.value)}
+                            className="flex-grow w-full p-2 rounded bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600"
+                            placeholder="Jumlah tersimpan"
+                        />
+                    </div>
+                </div>
+
+                <div className="mt-6 flex gap-3">
+                    <button onClick={onClose} className="w-full text-center py-2 font-semibold text-gray-700 dark:text-gray-200 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-lg transition-colors">
+                        Batal
+                    </button>
+                    <button onClick={handleSave} className={`w-full text-white font-bold py-2 px-4 rounded-lg bg-gradient-to-r ${accent.gradient} hover:opacity-90 transition-opacity`}>
+                        Simpan
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+
+const GoalItem: React.FC<{goal: Goal, onClick: () => void}> = ({ goal, onClick }) => {
     const progress = (goal.savedAmount / goal.targetAmount) * 100;
     const formatCurrency = (amount: number) => `Rp${amount.toLocaleString('id-ID')}`;
 
     return (
-        <Card className="flex flex-col gap-2">
+        <Card onClick={onClick} className="flex flex-col gap-2 cursor-pointer hover:shadow-lg transition-shadow">
             <div className="flex justify-between items-center">
                 <p className="font-semibold">{goal.name}</p>
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{Math.round(progress)}%</p>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                <div className="bg-sky-500 h-2.5 rounded-full" style={{ width: `${progress}%` }}></div>
+                <div className="bg-sky-500 h-2.5 rounded-full" style={{ width: `${progress > 100 ? 100 : progress}%` }}></div>
             </div>
             <div className="text-sm text-right text-gray-500 dark:text-gray-400">
                 {formatCurrency(goal.savedAmount)} / {formatCurrency(goal.targetAmount)}
@@ -82,10 +130,11 @@ const GoalItem: React.FC<{goal: Goal}> = ({ goal }) => {
 }
 
 const GoalsPage: React.FC = () => {
-    const { goals, transactions } = useData();
+    const { goals, transactions, updateGoal } = useData();
     const { accent } = useTheme();
     const [aiPrioritization, setAiPrioritization] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
 
     const handleGetPriority = async () => {
         if (goals.length === 0) {
@@ -140,7 +189,7 @@ const GoalsPage: React.FC = () => {
                  <div className="space-y-4">
                     <h2 className="text-lg font-semibold">Daftar Tujuan Anda</h2>
                     {goals.length > 0 ? (
-                        goals.map(goal => <GoalItem key={goal.id} goal={goal}/>)
+                        goals.map(goal => <GoalItem key={goal.id} goal={goal} onClick={() => setEditingGoal(goal)} />)
                     ) : (
                         <p className="text-center text-gray-500 dark:text-gray-400 py-4">
                             Anda belum memiliki tujuan. Mulai dengan kalkulator di atas!
@@ -148,6 +197,17 @@ const GoalsPage: React.FC = () => {
                     )}
                 </div>
             </div>
+
+            {editingGoal && (
+                <EditGoalModal 
+                    goal={editingGoal} 
+                    onClose={() => setEditingGoal(null)}
+                    onSave={(id, amount) => {
+                        updateGoal(id, amount);
+                        setEditingGoal(null);
+                    }}
+                />
+            )}
         </Page>
     );
 };

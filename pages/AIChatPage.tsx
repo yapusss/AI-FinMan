@@ -22,12 +22,12 @@ const AIChatPage: React.FC = () => {
 
   useEffect(scrollToBottom, [messages]);
   
-  const handleInitialAnalysis = async () => {
-      const prompt = "Analisis pengeluaran bulan ini. Identifikasi pemborosan dan berikan saran efisiensi. Hitung berapa yang bisa saya tabung jika tidak boros.";
-      setMessages([{ sender: 'user', text: prompt }]);
+  const handleInitialAnalysis = async (prompt?: string) => {
+      const analysisPrompt = prompt || "Analisis pengeluaran bulan ini. Identifikasi pemborosan dan berikan saran efisiensi. Hitung berapa yang bisa saya tabung jika tidak boros.";
+      setMessages([{ sender: 'user', text: analysisPrompt }]);
       setIsLoading(true);
       try {
-        const aiResponse = await getFinancialAdvice(transactions, prompt);
+        const aiResponse = await getFinancialAdvice(transactions, analysisPrompt);
         setMessages(prev => [...prev, { sender: 'ai', text: aiResponse }]);
       } catch (error) {
         setMessages(prev => [...prev, { sender: 'ai', text: 'Maaf, terjadi kesalahan.' }]);
@@ -38,7 +38,9 @@ const AIChatPage: React.FC = () => {
 
   useEffect(() => {
     if (location.state?.analyze) {
-        handleInitialAnalysis();
+        handleInitialAnalysis(location.state.prompt);
+        // Clear location state to prevent re-triggering on navigation
+        window.history.replaceState({}, document.title)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.state]);
