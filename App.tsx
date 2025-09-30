@@ -25,8 +25,8 @@ function App() {
 
 const MainApp: React.FC = () => {
   return (
-    <div className="h-screen w-screen bg-light-bg dark:bg-dark-bg text-light-text dark:text-dark-text overflow-hidden flex flex-col">
-      <main className="flex-grow overflow-y-auto pt-6 pb-28">
+    <div className="h-screen w-screen bg-light-bg dark:bg-dark-bg text-light-text dark:text-dark-text flex flex-col">
+      <main className="flex-grow overflow-y-auto pt-6">
         <Routes>
           <Route path="/" element={<DashboardPage />} />
           <Route path="/transactions" element={<TransactionsPage />} />

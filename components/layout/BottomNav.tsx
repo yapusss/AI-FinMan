@@ -16,7 +16,7 @@ const BottomNav: React.FC = () => {
   const { accent } = useTheme();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 h-16 bg-light-card dark:bg-dark-card border-t border-gray-200 dark:border-gray-700 shadow-lg">
+    <nav className="flex-shrink-0 h-16 bg-light-card dark:bg-dark-card border-t border-gray-200 dark:border-gray-700 shadow-lg">
       <div className="flex justify-around items-center h-full max-w-lg mx-auto">
         {navItems.map(item => (
           <NavLink

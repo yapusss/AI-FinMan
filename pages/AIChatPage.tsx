@@ -72,7 +72,7 @@ const AIChatPage: React.FC = () => {
 
   return (
     <Page title="Konsultasi AI">
-      <div className="flex flex-col h-[calc(100vh-150px)]">
+      <div className="flex flex-col flex-grow min-h-0">
         <div className="flex-grow overflow-y-auto pr-2 space-y-4">
           {messages.length === 0 && (
               <div className="text-center text-gray-500 dark:text-gray-400 p-4">
